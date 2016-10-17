@@ -4,6 +4,7 @@ from numpy.random import random
 from sklearn import cross_validation
 
 def _load(file, sep):
+	np.random.seed(0)
 	udata = pd.read_csv(file, sep=sep, names=['userid', 'itemid', 'rating', 'timestamp'], engine='python')
 	udata['rating'] = (udata['rating'] - 3) / 2
 
