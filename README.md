@@ -10,12 +10,16 @@ Result
  - ... TODO show more result
 
 ```bash
-python train.py
-python evaluate.py
+python trainAE.py
+python evaluateAE.py
 ```
 
 ## Hybrid collaborative filtering using Denoising AutoEncoders and Embedding
 This method uses Embedding on userdata to improve the model that uses Denoising AutoEncoder on rating matrix.
-https://github.com/ardiya/Recommender-System-Tensorflow/blob/master/Denoising%20AutoEncoder.ipynb
 
-... TODO split ipynb into much more understandable python code
+```bash
+python trainDAE.py
+python evaluateDAE.py
+```
+
+... TODO introduce embedding

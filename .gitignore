@@ -1,6 +1,6 @@
 #AY
 __pycache__
-train.log/
+train*.log/
 
 # Windows image file caches
 Thumbs.db

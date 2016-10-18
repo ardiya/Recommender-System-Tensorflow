@@ -12,14 +12,11 @@ if __name__ == '__main__':
 		
 		trainset, testset = load_movielens_1m()
 		X, y = model.convert_to_tensors(testset)
-		logits = model.inference(X, is_training=False)
+		logits = model.AE(X, is_training=False)
 
-		names_to_values, names_to_updates = slim.metrics.aggregate_metric_map({
-			'eval/mae': slim.metrics.streaming_mean_absolute_error(logits, y),
-			'eval/rmse': slim.metrics.streaming_root_mean_squared_error(logits, y),
-		})
+		names_to_values, names_to_updates = model.error_metrics(logits, y)
 		
-		logdir = 'train.log'
+		logdir = 'trainDAE.log'
 		checkpoint_path = tf.train.latest_checkpoint(logdir)
 		metric_values = slim.evaluation.evaluate_once(
 			master='',

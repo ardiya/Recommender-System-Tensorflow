@@ -10,14 +10,14 @@ if __name__ == '__main__':
 	with tf.Graph().as_default():
 		tf.logging.set_verbosity(tf.logging.INFO)
 		trainset, testset = load_movielens_1m()
-		X, y = model.convert_to_tensors(trainset)
-		logits = model.inference(X)
+		X, y = model.convert_to_tensors(trainset, noise=0.1)
+		logits = model.AE(X)
 		loss = model.loss(logits, y)
 		train_op = model.train(loss)
 
 		final_loss =slim.learning.train(
 			train_op,
-			logdir='train.log',
+			logdir='trainDAE.log',
 			number_of_steps=1000,
 			save_summaries_secs=5
 		)
