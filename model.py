@@ -10,25 +10,40 @@ def convert_to_tensors(dataset, noise=0):
 	y.set_shape([None, dataset.shape[1]])
 	return X, y
 
-def AE(X, layers=[100, 50, 20], is_training=True):
+def AE(X, layers=[500], is_training=True):
 	users, items = X.get_shape()
 	layers = layers + layers[-2::-1]
 	print("layers", layers)
 	net = X
 	for hidden_unit in layers:
+		net = slim.fully_connected(net, hidden_unit, tf.nn.tanh)
+		net = slim.dropout(net, 0.95, is_training=is_training)
+	net = slim.fully_connected(net, int(items), tf.nn.tanh)
+	return net
+
+def DAE(X, layers=[100, 50, 20], noise = 0.1, is_training=True):
+	users, items = X.get_shape()
+	
+	net = X
+	for hidden_unit in layers:
+		net = net + noise * tf.random_normal(net.get_shape())
 		net = slim.fully_connected(net, hidden_unit)
-		net = slim.dropout(net, 0.5, is_training=is_training)
-	net = slim.fully_connected(net, int(items), tf.nn.sigmoid)
+	for hidden_unit in layers[-2::-1]:
+		net = slim.fully_conn
+	net = slim.fully_connected(net, int(items), t)
 	return net
 
 def loss(logits, y):
-	slim.losses.softmax_cross_entropy(logits, y)
+	#slim.losses.softmax_cross_entropy(logits, y)
+	slim.losses.mean_squared_error(logits, y)
+	#slim.losses.mean_pairwise_squared_error(logits, y)
 	total_loss = slim.losses.get_total_loss()
 	tf.scalar_summary('losses/Total Loss', total_loss)
 	return total_loss
 
-def train(loss):
-	optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
+def train(loss, lr = 1e-4):
+	#optimizer = tf.train.GradientDescentOptimizer(lr)
+	optimizer = tf.train.AdamOptimizer()
 	train_op = slim.learning.create_train_op(loss, optimizer)
 	return train_op
 

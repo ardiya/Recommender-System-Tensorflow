@@ -12,7 +12,7 @@ if __name__ == '__main__':
 		
 		trainset, testset = load_movielens_1m()
 		X, y = model.convert_to_tensors(testset)
-		logits = model.AE(X, is_training=False)
+		logits = model.DAE(X, is_training=False, noise=0.0)
 
 		names_to_values, names_to_updates = model.error_metrics(logits, y)
 		
