@@ -1,4 +1,4 @@
-from dataset import load_movielens_100k, load_movielens_1m
+from dataset import load_movielens_100k, load_movielens_1m, to_tensor
 import model
 import tensorflow as tf
 slim = tf.contrib.slim
@@ -11,8 +11,10 @@ if __name__ == '__main__':
 		tf.logging.set_verbosity(tf.logging.INFO)
 		
 		trainset, testset = load_movielens_1m()
-		X, y = model.convert_to_tensors(testset)
-		logits = model.AE(X, is_training=False)
+		fullset = trainset + testset
+		X = to_tensor(trainset)
+		y = to_tensor(fullset)
+		logits, _ = model.AE(X, is_training=False)
 
 		names_to_values, names_to_updates = model.error_metrics(logits, y)
 		

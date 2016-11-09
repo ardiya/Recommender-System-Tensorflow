@@ -2,36 +2,28 @@ import tensorflow as tf
 import numpy as np
 slim = tf.contrib.slim
 
-def convert_to_tensors(dataset, noise=0):
-	X = tf.constant(dataset + np.random.normal(0, 0.2, dataset.shape),
-		dtype=tf.float32)
-	X.set_shape([None, dataset.shape[1]])
-	y = tf.constant(dataset, dtype=tf.float32)
-	y.set_shape([None, dataset.shape[1]])
-	return X, y
+def AE(input, is_training=True, alpha=1, beta=0.25):
+	batch_size, items = [x.value for x in input.get_shape()]
+	net = slim.dropout(input, 0.5, is_training=is_training)
+	print "Net", net.get_shape()
+	if batch_size:
+		mask = tf.random_uniform([batch_size, items], maxval=2, dtype=tf.int32) # randomint 0 or 1
+	else:
+		mask = tf.ones_like(net) #all to reconstruction
+	mask = tf.to_float(mask)
+	imask = 1 - mask
+	corrupted = tf.mul(net, mask)
 
-def AE(X, layers=[500], is_training=True):
-	users, items = X.get_shape()
-	layers = layers + layers[-2::-1]
-	print("layers", layers)
-	net = X
-	for hidden_unit in layers:
-		net = slim.fully_connected(net, hidden_unit, tf.nn.tanh)
-		net = slim.dropout(net, 0.95, is_training=is_training)
-	net = slim.fully_connected(net, int(items), tf.nn.tanh)
-	return net
-
-def DAE(X, layers=[100, 50, 20], noise = 0.1, is_training=True):
-	users, items = X.get_shape()
+	encoder = slim.fully_connected(corrupted, 500, tf.nn.tanh)
+	decoder = slim.fully_connected(encoder, items, tf.nn.tanh)	
 	
-	net = X
-	for hidden_unit in layers:
-		net = net + noise * tf.random_normal(net.get_shape())
-		net = slim.fully_connected(net, hidden_unit)
-	for hidden_unit in layers[-2::-1]:
-		net = slim.fully_conn
-	net = slim.fully_connected(net, int(items), t)
-	return net
+	denoising_loss = slim.losses.mean_squared_error(tf.mul(imask,decoder), tf.mul(imask,input))
+	tf.scalar_summary('losses/Denoising', denoising_loss)
+	reconstruction_loss = slim.losses.mean_squared_error(tf.mul(mask,decoder),tf.mul(mask,input))
+	tf.scalar_summary('losses/Reconstruction', reconstruction_loss)
+	loss = alpha *  denoising_loss + beta * reconstruction_loss
+	tf.scalar_summary('losses/Total', loss)
+	return net, loss
 
 def loss(logits, y):
 	#slim.losses.softmax_cross_entropy(logits, y)
@@ -41,9 +33,9 @@ def loss(logits, y):
 	tf.scalar_summary('losses/Total Loss', total_loss)
 	return total_loss
 
-def train(loss, lr = 1e-4):
-	#optimizer = tf.train.GradientDescentOptimizer(lr)
-	optimizer = tf.train.AdamOptimizer()
+def train(loss, lr = 7):
+	optimizer = tf.train.GradientDescentOptimizer(lr)
+	#optimizer = tf.train.AdamOptimizer()
 	train_op = slim.learning.create_train_op(loss, optimizer)
 	return train_op
 

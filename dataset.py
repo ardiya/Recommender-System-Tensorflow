@@ -2,6 +2,12 @@ import pandas as pd
 import numpy as np
 from numpy.random import random
 from sklearn import cross_validation
+import tensorflow as tf
+
+def to_tensor(dataset):
+	X = tf.constant(dataset, dtype=tf.float32) 
+	X.set_shape([None, dataset.shape[1]]) 
+	return X
 
 def _load(file, sep):
 	np.random.seed(0)
